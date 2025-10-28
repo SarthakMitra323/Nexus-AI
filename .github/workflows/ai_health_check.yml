@@ -1,0 +1,51 @@
+name: AI Platform Health Monitor
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # Runs every 6 hours
+  workflow_dispatch:        # Allows manual triggering
+
+jobs:
+  check-ai:
+    name: Check AI Frontend and Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check frontend availability
+        shell: bash
+        run: |
+          echo "🔍 Checking frontend availability..."
+          FRONTEND_URL="https://ainexusplatform.vercel.app/app.html"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL")
+
+          if [ "$STATUS" -ne 200 ]; then
+            echo "❌ Frontend DOWN! HTTP status: $STATUS"
+            exit 1
+          else
+            echo "✅ Frontend OK (HTTP $STATUS)"
+          fi
+
+      - name: Check backend API health
+        shell: bash
+        run: |
+          echo "🔍 Checking backend API health..."
+          # Replace with your backend's health endpoint if available
+          BACKEND_URL="https://ainexusplatform.vercel.app/api/health"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL")
+
+          if [ "$STATUS" -ne 200 ]; then
+            echo "⚠️ Backend may be DOWN or unhealthy (HTTP $STATUS)"
+            exit 1
+          else
+            echo "✅ Backend API OK (HTTP $STATUS)"
+          fi
+
+      - name: Write summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## AI Health Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend URL: https://ainexusplatform.vercel.app/app.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend URL: https://ainexusplatform.vercel.app/api/health" >> $GITHUB_STEP_SUMMARY
+          echo "- Last check: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "- Result: Workflow completed ✅" >> $GITHUB_STEP_SUMMARY
