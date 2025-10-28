@@ -3,7 +3,7 @@ name: AI Platform Health Monitor
 on:
   schedule:
     - cron: "0 */6 * * *"   # Runs every 6 hours
-  workflow_dispatch:        # Allows manual triggering
+  workflow_dispatch:        # Allows manual trigger from GitHub UI
 
 jobs:
   check-ai:
@@ -29,9 +29,13 @@ jobs:
         shell: bash
         run: |
           echo "🔍 Checking backend API health..."
-          # Replace with your backend's health endpoint if available
-          BACKEND_URL="https://ainexusplatform.vercel.app/api/health"
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL")
+          BACKEND_URL="https://nexus-ai-1s8u.onrender.com/api/chat"
+
+          # Send a safe, minimal dummy POST (won’t trigger real AI response)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "$BACKEND_URL" \
+            -H "Content-Type: application/json" \
+            -d '{"messages":[{"role":"user","content":"ping"}],"model":"fast"}')
 
           if [ "$STATUS" -ne 200 ]; then
             echo "⚠️ Backend may be DOWN or unhealthy (HTTP $STATUS)"
@@ -44,8 +48,8 @@ jobs:
         if: always()
         shell: bash
         run: |
-          echo "## AI Health Check Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- Frontend URL: https://ainexusplatform.vercel.app/app.html" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend URL: https://ainexusplatform.vercel.app/api/health" >> $GITHUB_STEP_SUMMARY
+          echo "## 🧠 AI Health Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend: https://ainexusplatform.vercel.app/app.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend: https://nexus-ai-1s8u.onrender.com/api/chat" >> $GITHUB_STEP_SUMMARY
           echo "- Last check: $(date -u)" >> $GITHUB_STEP_SUMMARY
-          echo "- Result: Workflow completed ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ✅ Completed successfully" >> $GITHUB_STEP_SUMMARY
