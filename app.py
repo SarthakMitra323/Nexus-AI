@@ -75,11 +75,11 @@ def handle_standard_chat(messages, model_choice):
     is_code_related = any(keyword in user_prompt.lower() for keyword in code_keywords)
 
     if model_choice == 'fast':
-        model_name_api = "gemini-2.5-flash"
+        model_name_api = "gemini-3-flash-preview"
         instruction_to_use = system_instruction_fast
         config_to_use = generation_config_fast
     else:
-        model_name_api = "gemini-2.5-pro"
+        model_name_api = "gemini-3-pro-preview"
         instruction_to_use = system_instruction_pro_coding if is_code_related else system_instruction_pro_default
         config_to_use = generation_config_pro
 
@@ -187,3 +187,4 @@ def chat():
 
 if __name__ == '__main__':
     app.run(port=3000, debug=True)
+
